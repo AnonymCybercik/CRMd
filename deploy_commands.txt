@@ -1,0 +1,24 @@
+# КОМАНДЫ ДЛЯ ТЕРМИНАЛА НА СЕРВЕРЕ
+
+# 1. Установка зависимостей
+pip install Flask==2.3.3
+pip install Flask-SQLAlchemy==3.0.5
+pip install Flask-Login==0.6.2
+pip install Werkzeug==2.3.7
+pip install PyMySQL==1.1.0
+pip install python-dotenv==1.0.0
+
+# 2. Инициализация базы данных
+python init_db.py
+
+# 3. Создание администратора
+python create_admin.py
+
+# 4. Создание всех пользователей
+python create_all_users.py
+
+# 5. Проверка работы приложения
+python app.py
+
+
+

@@ -1,0 +1,141 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление зарплатой{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Управление зарплатой</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary" onclick="showModal('Новая зарплата', 'Функция добавления новой записи зарплаты будет добавлена в следующей версии', 'info')">
+                                <i class="fas fa-plus"></i> Новая зарплата
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Поиск записей зарплаты...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Общий фонд зарплаты</h5>
+                                    <h3>{{ "{:,.2f}".format(payroll_stats.total_payroll) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Выплачено</h5>
+                                    <h3>{{ "{:,.2f}".format(payroll_stats.paid) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">К выплате</h5>
+                                    <h3>{{ "{:,.2f}".format(payroll_stats.pending) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Сотрудников</h5>
+                                    <h3>{{ payroll_stats.employees }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Сотрудник</th>
+                                    <th>Должность</th>
+                                    <th>Оклад</th>
+                                    <th>Премия</th>
+                                    <th>Налоги</th>
+                                    <th>К выплате</th>
+                                    <th>Статус</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for payroll in payroll_records %}
+                                <tr>
+                                    <td>{{ payroll.employee_name }}</td>
+                                    <td>{{ payroll.position }}</td>
+                                    <td>{{ "{:,.2f}".format(payroll.salary) }} сум</td>
+                                    <td>{{ "{:,.2f}".format(payroll.bonus) }} сум</td>
+                                    <td>{{ "{:,.2f}".format(payroll.taxes) }} сум</td>
+                                    <td>{{ "{:,.2f}".format(payroll.net_amount) }} сум</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if payroll.status == 'paid' else 'warning' if payroll.status == 'pending' else 'danger' }}">
+                                            {{ 'Выплачено' if payroll.status == 'paid' else 'Ожидает' if payroll.status == 'pending' else 'Просрочено' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewPayroll({{ payroll.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editPayroll({{ payroll.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {% if payroll.status == 'pending' %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="paySalary({{ payroll.id }})">
+                                            <i class="fas fa-credit-card"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Записи зарплаты не найдены</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewPayroll(payrollId) {
+    showModal('Просмотр зарплаты', `Просмотр записи зарплаты #${payrollId} будет добавлен в следующей версии`, 'info');
+}
+
+function editPayroll(payrollId) {
+    showModal('Редактирование зарплаты', `Редактирование записи зарплаты #${payrollId} будет добавлено в следующей версии`, 'info');
+}
+
+function paySalary(payrollId) {
+    showModal('Выплата зарплаты', `Выплата зарплаты #${payrollId} будет добавлена в следующей версии`, 'success');
+}
+</script>
+{% endblock %}
+
+
+
+
+

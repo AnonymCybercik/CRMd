@@ -1,0 +1,147 @@
+{% extends 'base.html' %}
+
+{% block title %}Контроль качества{% endblock %}
+
+{% block content %}
+<h2><i class="fas fa-search"></i> Контроль качества</h2>
+
+<div class="card">
+    <h3><i class="fas fa-clipboard-check"></i> Активные проверки</h3>
+    
+    <div style="margin: 20px 0;">
+        <button class="btn" onclick="startNewInspection()" style="margin-right: 10px;">
+            <i class="fas fa-plus"></i> Начать проверку
+        </button>
+        
+        <button class="btn" onclick="viewInspectionHistory()" style="background: #6c757d;">
+            <i class="fas fa-history"></i> История проверок
+        </button>
+    </div>
+    
+    <div id="inspection-list">
+        <div style="text-align: center; padding: 40px; color: #6c757d;">
+            <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 15px;"></i>
+            <h4>Активных проверок нет</h4>
+            <p>Начните новую проверку качества товаров</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-chart-pie"></i> Статистика качества</h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">98.5%</h3>
+            <p style="margin: 5px 0 0 0;">Прошли проверку</p>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">1.2%</h3>
+            <p style="margin: 5px 0 0 0;">Забраковано</p>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">0.3%</h3>
+            <p style="margin: 5px 0 0 0;">Требуют доработки</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-exclamation-triangle"></i> Проблемные товары</h3>
+    
+    <div style="margin: 20px 0;">
+        <div style="border: 1px solid #dc3545; border-radius: 8px; padding: 15px; background: #f8d7da; margin-bottom: 15px;">
+            <h5 style="color: #721c24; margin-bottom: 10px;">
+                <i class="fas fa-times-circle"></i> Забракованные товары
+            </h5>
+            <div style="color: #721c24; font-size: 14px;">
+                • Товар: Насос циркуляционный ABC-123<br>
+                • Проблема: Неисправность двигателя<br>
+                • Поставщик: ООО "Тепло-Сервис"<br>
+                • Действие: Возврат поставщику
+            </div>
+        </div>
+        
+        <div style="border: 1px solid #ffc107; border-radius: 8px; padding: 15px; background: #fff3cd; margin-bottom: 15px;">
+            <h5 style="color: #856404; margin-bottom: 10px;">
+                <i class="fas fa-exclamation-triangle"></i> Требуют доработки
+            </h5>
+            <div style="color: #856404; font-size: 14px;">
+                • Товар: Труба стальная 50мм<br>
+                • Проблема: Незначительные царапины<br>
+                • Поставщик: ИП "Тепло-Мастер"<br>
+                • Действие: Принять с замечанием
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-cogs"></i> Настройки контроля качества</h3>
+    
+    <div style="margin: 20px 0;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                <h5 style="color: #495057; margin-bottom: 10px;">
+                    <i class="fas fa-check-circle"></i> Критерии приемки
+                </h5>
+                <p style="color: #6c757d; font-size: 14px;">Настройка стандартов качества</p>
+                <button class="btn" style="width: 100%; padding: 8px; font-size: 12px;" onclick="configureAcceptanceCriteria()">
+                    Настроить
+                </button>
+            </div>
+            
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                <h5 style="color: #495057; margin-bottom: 10px;">
+                    <i class="fas fa-user-check"></i> Инспекторы
+                </h5>
+                <p style="color: #6c757d; font-size: 14px;">Управление персоналом контроля качества</p>
+                <button class="btn" style="width: 100%; padding: 8px; font-size: 12px;" onclick="manageInspectors()">
+                    Управлять
+                </button>
+            </div>
+            
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                <h5 style="color: #495057; margin-bottom: 10px;">
+                    <i class="fas fa-chart-bar"></i> Отчеты
+                </h5>
+                <p style="color: #6c757d; font-size: 14px;">Генерация отчетов по качеству</p>
+                <button class="btn" style="width: 100%; padding: 8px; font-size: 12px;" onclick="generateQualityReport()">
+                    Создать отчет
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function startNewInspection() {
+    const inspectionType = prompt('Выберите тип проверки:\n1 - Входящий контроль\n2 - Промежуточная проверка\n3 - Выходной контроль');
+    
+    if (inspectionType) {
+        alert(`Начата проверка типа ${inspectionType}`);
+        // Здесь можно добавить логику создания проверки
+    }
+}
+
+function viewInspectionHistory() {
+    alert('История проверок качества:\n\n• 15.10.2025 - Входящий контроль партии насосов\n• 10.10.2025 - Промежуточная проверка труб\n• 05.10.2025 - Выходной контроль готовой продукции');
+}
+
+function configureAcceptanceCriteria() {
+    alert('Настройка критериев приемки:\n\n• Визуальный осмотр\n• Функциональное тестирование\n• Соответствие спецификациям\n• Упаковка и маркировка');
+}
+
+function manageInspectors() {
+    alert('Управление инспекторами:\n\n• Иванов И.И. - Старший инспектор\n• Петров П.П. - Инспектор\n• Сидоров С.С. - Младший инспектор');
+}
+
+function generateQualityReport() {
+    alert('Генерируется отчет по контролю качества...');
+}
+</script>
+{% endblock %}
+
+

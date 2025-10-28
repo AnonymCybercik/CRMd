@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Циклический подсчет{% endblock %}
+
+{% block content %}
+<h2><i class="fas fa-calculator"></i> Циклический подсчет</h2>
+
+<div class="card">
+    <h3><i class="fas fa-clipboard-check"></i> Активные подсчеты</h3>
+    
+    <div style="margin: 20px 0;">
+        <button class="btn" onclick="startNewCounting()" style="margin-right: 10px;">
+            <i class="fas fa-plus"></i> Начать новый подсчет
+        </button>
+        
+        <button class="btn" onclick="viewCountingHistory()" style="background: #6c757d;">
+            <i class="fas fa-history"></i> История подсчетов
+        </button>
+    </div>
+    
+    <div id="counting-list">
+        <div style="text-align: center; padding: 40px; color: #6c757d;">
+            <i class="fas fa-clipboard-list" style="font-size: 48px; margin-bottom: 15px;"></i>
+            <h4>Активных подсчетов нет</h4>
+            <p>Начните новый подсчет для инвентаризации товаров</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-chart-line"></i> Статистика подсчетов</h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">0</h3>
+            <p style="margin: 5px 0 0 0;">Активных подсчетов</p>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">15</h3>
+            <p style="margin: 5px 0 0 0;">Завершенных за месяц</p>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">98.5%</h3>
+            <p style="margin: 5px 0 0 0;">Точность подсчетов</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-tasks"></i> Планирование подсчетов</h3>
+    
+    <div style="margin: 20px 0;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                <h5 style="color: #495057; margin-bottom: 10px;">
+                    <i class="fas fa-calendar-day"></i> Ежедневные подсчеты
+                </h5>
+                <p style="color: #6c757d; font-size: 14px;">Быстрые проверки критических товаров</p>
+                <button class="btn" style="width: 100%; padding: 8px; font-size: 12px;" onclick="scheduleDailyCounting()">
+                    Запланировать
+                </button>
+            </div>
+            
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                <h5 style="color: #495057; margin-bottom: 10px;">
+                    <i class="fas fa-calendar-week"></i> Еженедельные подсчеты
+                </h5>
+                <p style="color: #6c757d; font-size: 14px;">Полная инвентаризация по зонам</p>
+                <button class="btn" style="width: 100%; padding: 8px; font-size: 12px;" onclick="scheduleWeeklyCounting()">
+                    Запланировать
+                </button>
+            </div>
+            
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px;">
+                <h5 style="color: #495057; margin-bottom: 10px;">
+                    <i class="fas fa-calendar-alt"></i> Ежемесячные подсчеты
+                </h5>
+                <p style="color: #6c757d; font-size: 14px;">Полная инвентаризация всего склада</p>
+                <button class="btn" style="width: 100%; padding: 8px; font-size: 12px;" onclick="scheduleMonthlyCounting()">
+                    Запланировать
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function startNewCounting() {
+    const countingType = prompt('Выберите тип подсчета:\n1 - Быстрый подсчет\n2 - Полный подсчет\n3 - Подсчет по зонам');
+    
+    if (countingType) {
+        alert(`Начат новый подсчет типа ${countingType}`);
+        // Здесь можно добавить логику создания подсчета
+    }
+}
+
+function viewCountingHistory() {
+    alert('История подсчетов:\n\n• 15.10.2025 - Полный подсчет склада A\n• 10.10.2025 - Подсчет зоны B-2\n• 05.10.2025 - Быстрый подсчет критических товаров');
+}
+
+function scheduleDailyCounting() {
+    alert('Ежедневный подсчет запланирован на 9:00');
+}
+
+function scheduleWeeklyCounting() {
+    alert('Еженедельный подсчет запланирован на понедельник');
+}
+
+function scheduleMonthlyCounting() {
+    alert('Ежемесячный подсчет запланирован на 1 число каждого месяца');
+}
+</script>
+{% endblock %}
+
+

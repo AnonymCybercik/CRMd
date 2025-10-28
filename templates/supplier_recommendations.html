@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2><i class="fas fa-lightbulb"></i> Рекомендации поставщиков</h2>
+    <p><strong>Материал:</strong> {{ request.resource.name if request.resource else 'Неизвестный' }}</p>
+    <p><strong>Количество:</strong> {{ request.quantity }} {{ request.unit or 'шт' }}</p>
+    <p><strong>Описание:</strong> {{ request.description or 'Не указано' }}</p>
+    
+    <div class="recommendations">
+        <h3>Рекомендуемые поставщики:</h3>
+        
+        {% for rec in recommendations %}
+        <div class="recommendation-card">
+            <div class="supplier-info">
+                <h4>{{ rec.supplier.name }}</h4>
+                <p><strong>Качество:</strong> {{ rec.quality_score }}%</p>
+                <p><strong>Цена:</strong> {{ "%.2f"|format(rec.estimated_price) }} сум</p>
+                <p><strong>Срок доставки:</strong> {{ rec.delivery_time }} дней</p>
+                <p><strong>Рейтинг:</strong> {{ rec.rating }}/5</p>
+                <p><strong>Телефон:</strong> {{ rec.contact_phone or 'Не указан' }}</p>
+                <p><strong>Адрес:</strong> {{ rec.address or 'Не указан' }}</p>
+            </div>
+            
+            <div class="supplier-actions">
+                <form method="POST" action="{{ url_for('confirm_supplier_order', request_id=request.id, supplier_id=rec.supplier.id) }}" style="display: inline;">
+                    <button type="submit" class="btn success">
+                        <i class="fas fa-check"></i> Выбрать этого поставщика
+                    </button>
+                </form>
+                
+                <a href="tel:{{ rec.contact_phone }}" class="btn" style="margin-left: 10px;">
+                    <i class="fas fa-phone"></i> Позвонить
+                </a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <div class="actions">
+        <a href="{{ url_for('supplier_page') }}" class="btn">
+            <i class="fas fa-arrow-left"></i> Назад к снабжению
+        </a>
+    </div>
+</div>
+
+<style>
+.recommendations {
+    margin-top: 20px;
+}
+
+.recommendation-card {
+    background: #f8f9fa;
+    border: 1px solid #e1e8ed;
+    border-radius: 6px;
+    padding: 20px;
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.supplier-info {
+    flex: 1;
+}
+
+.supplier-info h4 {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+.supplier-info p {
+    margin: 5px 0;
+    color: #7f8c8d;
+}
+
+.supplier-actions {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+}
+
+.actions {
+    margin-top: 20px;
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+

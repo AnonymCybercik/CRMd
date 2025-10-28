@@ -1,0 +1,175 @@
+{% extends 'base.html' %}
+
+{% block title %}Ожидаемые поставки{% endblock %}
+
+{% block content %}
+<h2><i class="fas fa-truck"></i> Ожидаемые поставки</h2>
+
+<div class="card">
+    <h3><i class="fas fa-calendar-check"></i> Поставки в пути</h3>
+    
+    <div style="margin: 20px 0;">
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <button class="btn" onclick="refreshDeliveries()" style="background: #17a2b8;">
+                <i class="fas fa-sync"></i> Обновить
+            </button>
+            
+            <button class="btn" onclick="addNewDelivery()" style="background: #28a745;">
+                <i class="fas fa-plus"></i> Добавить поставку
+            </button>
+        </div>
+        
+        <div id="deliveries-list">
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Поставка #001</strong>
+                        <br>
+                        <small style="color: #6c757d;">Поставщик: ООО "Тепло-Сервис" | Товары: 15 позиций</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge badge-warning">В пути</span>
+                        <br>
+                        <small style="color: #6c757d;">Ожидается: 16.10.2025</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Поставка #002</strong>
+                        <br>
+                        <small style="color: #6c757d;">Поставщик: ИП "Тепло-Мастер" | Товары: 8 позиций</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge badge-info">Готово к отправке</span>
+                        <br>
+                        <small style="color: #6c757d;">Ожидается: 17.10.2025</small>
+                    </div>
+                </div>
+            </div>
+            
+            <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 15px; margin-bottom: 10px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <strong>Поставка #003</strong>
+                        <br>
+                        <small style="color: #6c757d;">Поставщик: ООО "Тепло-Плюс" | Товары: 12 позиций</small>
+                    </div>
+                    <div style="text-align: right;">
+                        <span class="badge badge-success">Доставлено</span>
+                        <br>
+                        <small style="color: #6c757d;">Получено: 15.10.2025</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-chart-bar"></i> Статистика поставок</h3>
+    
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin: 20px 0;">
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">3</h3>
+            <p style="margin: 5px 0 0 0;">Ожидаемых поставок</p>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">35</h3>
+            <p style="margin: 5px 0 0 0;">Позиций товаров</p>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">2.1</h3>
+            <p style="margin: 5px 0 0 0;">Среднее время доставки (дни)</p>
+        </div>
+        
+        <div class="stat-card" style="text-align: center; padding: 20px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; border-radius: 8px;">
+            <h3 style="margin: 0; font-size: 24px;">₽850,000</h3>
+            <p style="margin: 5px 0 0 0;">Общая стоимость</p>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-list-alt"></i> Детали поставок</h3>
+    
+    <div style="margin: 20px 0;">
+        <div style="border: 1px solid #dee2e6; border-radius: 8px; padding: 20px; margin-bottom: 15px;">
+            <h5 style="color: #495057; margin-bottom: 15px;">
+                <i class="fas fa-truck"></i> Поставка #001 - ООО "Тепло-Сервис"
+            </h5>
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+                <div>
+                    <strong>Статус:</strong> <span class="badge badge-warning">В пути</span>
+                </div>
+                <div>
+                    <strong>Ожидается:</strong> 16.10.2025
+                </div>
+                <div>
+                    <strong>Товаров:</strong> 15 позиций
+                </div>
+                <div>
+                    <strong>Стоимость:</strong> ₽450,000
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 15px;">
+                <strong>Товары:</strong>
+                <ul style="margin: 10px 0; padding-left: 20px;">
+                    <li>Насос циркуляционный ABC-123 - 5 шт.</li>
+                    <li>Труба стальная 50мм - 100 м</li>
+                    <li>Клапан обратный - 10 шт.</li>
+                    <li>Фитинг 90° - 20 шт.</li>
+                </ul>
+            </div>
+            
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" style="padding: 8px 16px; font-size: 12px;" onclick="viewDeliveryDetails('001')">
+                    <i class="fas fa-eye"></i> Подробнее
+                </button>
+                <button class="btn" style="padding: 8px 16px; font-size: 12px; background: #28a745;" onclick="confirmDelivery('001')">
+                    <i class="fas fa-check"></i> Подтвердить получение
+                </button>
+                <button class="btn" style="padding: 8px 16px; font-size: 12px; background: #dc3545;" onclick="rejectDelivery('001')">
+                    <i class="fas fa-times"></i> Отклонить
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function refreshDeliveries() {
+    alert('Обновление списка поставок...');
+}
+
+function addNewDelivery() {
+    const supplier = prompt('Введите поставщика:');
+    if (supplier) {
+        alert(`Добавлена новая поставка от ${supplier}`);
+    }
+}
+
+function viewDeliveryDetails(deliveryId) {
+    alert(`Детали поставки #${deliveryId}:\n\n• Поставщик: ООО "Тепло-Сервис"\n• Товары: 15 позиций\n• Стоимость: ₽450,000\n• Статус: В пути\n• Ожидается: 16.10.2025`);
+}
+
+function confirmDelivery(deliveryId) {
+    if (confirm(`Подтвердить получение поставки #${deliveryId}?`)) {
+        alert(`Поставка #${deliveryId} подтверждена`);
+    }
+}
+
+function rejectDelivery(deliveryId) {
+    const reason = prompt('Причина отклонения поставки:');
+    if (reason) {
+        alert(`Поставка #${deliveryId} отклонена. Причина: ${reason}`);
+    }
+}
+</script>
+{% endblock %}

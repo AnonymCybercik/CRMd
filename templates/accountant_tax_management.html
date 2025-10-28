@@ -1,0 +1,139 @@
+{% extends 'base.html' %}
+
+{% block title %}Управление налогами{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Управление налогами</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary" onclick="showModal('Новый налог', 'Функция добавления нового налога будет добавлена в следующей версии', 'info')">
+                                <i class="fas fa-plus"></i> Новый налог
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Поиск налогов...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Общая сумма налогов</h5>
+                                    <h3>{{ "{:,.2f}".format(tax_stats.total_taxes) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Уплачено</h5>
+                                    <h3>{{ "{:,.2f}".format(tax_stats.paid) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">К доплате</h5>
+                                    <h3>{{ "{:,.2f}".format(tax_stats.owed) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Просрочено</h5>
+                                    <h3>{{ "{:,.2f}".format(tax_stats.overdue) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Тип налога</th>
+                                    <th>Период</th>
+                                    <th>Сумма</th>
+                                    <th>Статус</th>
+                                    <th>Срок уплаты</th>
+                                    <th>Дата уплаты</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for tax in taxes %}
+                                <tr>
+                                    <td>{{ tax.tax_type }}</td>
+                                    <td>{{ tax.period }}</td>
+                                    <td>{{ "{:,.2f}".format(tax.amount) }} сум</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if tax.status == 'paid' else 'warning' if tax.status == 'pending' else 'danger' }}">
+                                            {{ 'Уплачен' if tax.status == 'paid' else 'Ожидает' if tax.status == 'pending' else 'Просрочен' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ tax.due_date.strftime('%d.%m.%Y') if tax.due_date else 'Не указан' }}</td>
+                                    <td>{{ tax.paid_date.strftime('%d.%m.%Y') if tax.paid_date else 'Не уплачен' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewTax({{ tax.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editTax({{ tax.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {% if tax.status != 'paid' %}
+                                        <button class="btn btn-sm btn-outline-success" onclick="payTax({{ tax.id }})">
+                                            <i class="fas fa-credit-card"></i>
+                                        </button>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center">Налоги не найдены</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewTax(taxId) {
+    showModal('Просмотр налога', `Просмотр налога #${taxId} будет добавлен в следующей версии`, 'info');
+}
+
+function editTax(taxId) {
+    showModal('Редактирование налога', `Редактирование налога #${taxId} будет добавлено в следующей версии`, 'info');
+}
+
+function payTax(taxId) {
+    showModal('Уплата налога', `Уплата налога #${taxId} будет добавлена в следующей версии`, 'success');
+}
+</script>
+{% endblock %}
+
+
+
+
+

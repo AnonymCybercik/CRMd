@@ -1,0 +1,103 @@
+{% extends 'base.html' %}
+
+{% block title %}Настройки компании{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Настройки компании</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" action="{{ url_for('director_company_settings') }}">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_name">Название компании</label>
+                                    <input type="text" class="form-control" id="company_name" name="company_name" 
+                                           value="{{ company_settings.get('company_name', '') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_address">Адрес</label>
+                                    <input type="text" class="form-control" id="company_address" name="company_address" 
+                                           value="{{ company_settings.get('company_address', '') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_phone">Телефон</label>
+                                    <input type="tel" class="form-control" id="company_phone" name="company_phone" 
+                                           value="{{ company_settings.get('company_phone', '') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_email">Email</label>
+                                    <input type="email" class="form-control" id="company_email" name="company_email" 
+                                           value="{{ company_settings.get('company_email', '') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_inn">ИНН</label>
+                                    <input type="text" class="form-control" id="company_inn" name="company_inn" 
+                                           value="{{ company_settings.get('company_inn', '') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_bank">Банк</label>
+                                    <input type="text" class="form-control" id="company_bank" name="company_bank" 
+                                           value="{{ company_settings.get('company_bank', '') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_account">Расчетный счет</label>
+                                    <input type="text" class="form-control" id="company_account" name="company_account" 
+                                           value="{{ company_settings.get('company_account', '') }}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="company_mfo">МФО</label>
+                                    <input type="text" class="form-control" id="company_mfo" name="company_mfo" 
+                                           value="{{ company_settings.get('company_mfo', '') }}" required>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="company_description">Описание компании</label>
+                            <textarea class="form-control" id="company_description" name="company_description" rows="4">{{ company_settings.get('company_description', '') }}</textarea>
+                        </div>
+                        
+                        <div class="form-group">
+                            <button type="submit" class="btn btn-primary">Сохранить настройки</button>
+                            <a href="{{ url_for('director_page') }}" class="btn btn-secondary">Отмена</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+
+
+
+

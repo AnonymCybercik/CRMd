@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% block content %}
+<!-- VERSION: 3.0 - NEW ROUTE /create-user -->
+<h2><i class="fas fa-users-cog"></i> Центр управления аккаунтами</h2>
+
+<div class="card">
+  <h3><i class="fas fa-user-plus"></i> Добавить пользователя</h3>
+  <form method="post" action="/create-user">
+    <!-- DEBUG: Form action URL: /create-user -->
+    <div class="form-group">
+      <label>Логин</label>
+      <input name="username" placeholder="Введите логин" required>
+    </div>
+    <div class="form-group">
+      <label>Email</label>
+      <input name="email" type="email" placeholder="Введите email" required>
+    </div>
+    <div class="form-group">
+      <label>Пароль</label>
+      <input name="password" type="password" placeholder="Введите пароль" required>
+    </div>
+    <div class="form-group">
+      <label>Имя</label>
+      <input name="first_name" placeholder="Введите имя" required>
+    </div>
+    <div class="form-group">
+      <label>Фамилия</label>
+      <input name="last_name" placeholder="Введите фамилию" required>
+    </div>
+    <div class="form-group">
+      <label>Телефон</label>
+      <input name="phone" placeholder="Введите телефон">
+    </div>
+    <div class="form-group">
+      <label>Роль</label>
+      <select name="role" required>
+        <option value="">Выберите роль</option>
+        <option value="director">👑 Директор</option>
+        <option value="manager">👥 Менеджер</option>
+        <option value="supplier">🚚 Снабженец</option>
+        <option value="warehouse">🏪 Склад</option>
+        <option value="production">⚙️ Производство</option>
+        <option value="accountant">🧮 Бухгалтер</option>
+      </select>
+    </div>
+    <button class="btn success"><i class="fas fa-plus"></i> Добавить пользователя</button>
+  </form>
+</div>
+<div class="card">
+  <h3><i class="fas fa-list"></i> Список пользователей</h3>
+  <table>
+    <thead>
+      <tr>
+        <th><i class="fas fa-hashtag"></i> ID</th>
+        <th><i class="fas fa-user"></i> Логин</th>
+        <th><i class="fas fa-user-tag"></i> Роль</th>
+        <th><i class="fas fa-id-card"></i> ФИО</th>
+        <th><i class="fas fa-cogs"></i> Действия</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for u in users %}
+      <tr>
+        <td><strong>{{ u.id }}</strong></td>
+        <td><strong>{{ u.username }}</strong></td>
+        <td>
+          <span style="padding: 4px 8px; border-radius: 12px; background: #667eea; color: white; font-size: 12px;">
+            {{ u.roles[0].name if u.roles else 'Не назначена' }}
+          </span>
+        </td>
+        <td>{{ u.first_name }} {{ u.last_name }}</td>
+        <td>
+          <form method="post" action="{{ url_for('reset_user_password', user_id=u.id) }}" style="display:inline; margin-right: 5px;">
+            <button class="btn small" type="submit" title="Сбросить пароль">
+              <i class="fas fa-key"></i> Сброс
+            </button>
+          </form>
+          <form method="post" action="{{ url_for('delete_user', user_id=u.id) }}" style="display:inline;">
+            <button class="btn small danger" type="submit" onclick="return confirm('Вы уверены, что хотите удалить пользователя {{ u.username }}?')" title="Удалить пользователя">
+              <i class="fas fa-trash"></i> Удалить
+            </button>
+          </form>
+        </td>
+      </tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

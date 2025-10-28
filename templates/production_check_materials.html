@@ -1,0 +1,135 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="card">
+    <h2><i class="fas fa-clipboard-check"></i> Проверка материалов для задачи</h2>
+    
+    <div class="task-info">
+        <h3>Информация о задаче</h3>
+        <p><strong>Описание:</strong> {{ task.description }}</p>
+        <p><strong>Продукт:</strong> {{ task.product.name if task.product else 'Неизвестный' }}</p>
+        <p><strong>Количество:</strong> {{ task.quantity }}</p>
+        <p><strong>Приоритет:</strong> {{ task.priority }}</p>
+        <p><strong>Срок выполнения:</strong> {{ task.due_date.strftime('%d.%m.%Y') if task.due_date else 'Не указан' }}</p>
+    </div>
+    
+    <div class="materials-check">
+        <h3>Проверка материалов</h3>
+        
+        {% if required_materials %}
+            <table>
+                <thead>
+                    <tr>
+                        <th>Материал</th>
+                        <th>Требуется</th>
+                        <th>Доступно</th>
+                        <th>Статус</th>
+                        <th>Недостаток</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for material_name, info in required_materials.items() %}
+                    <tr class="{% if info.sufficient %}sufficient{% else %}insufficient{% endif %}">
+                        <td>{{ material_name }}</td>
+                        <td>{{ info.required }}</td>
+                        <td>{{ info.available }}</td>
+                        <td>
+                            {% if info.sufficient %}
+                                <span class="status success">
+                                    <i class="fas fa-check"></i> Достаточно
+                                </span>
+                            {% else %}
+                                <span class="status danger">
+                                    <i class="fas fa-times"></i> Недостаточно
+                                </span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if not info.sufficient %}
+                                {{ info.shortage }}
+                            {% else %}
+                                -
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
+            <p>Для данной задачи не требуются дополнительные материалы.</p>
+        {% endif %}
+    </div>
+    
+    <div class="actions">
+        {% if all_materials_ready %}
+            <form method="POST" action="{{ url_for('production_start_production', task_id=task.id) }}" style="display: inline;">
+                <button type="submit" class="btn success">
+                    <i class="fas fa-play"></i> Начать производство
+                </button>
+            </form>
+        {% else %}
+            <div class="alert danger">
+                <i class="fas fa-exclamation-triangle"></i>
+                Недостаточно материалов для начала производства. Обратитесь к снабженцу.
+            </div>
+        {% endif %}
+        
+        <a href="{{ url_for('production_page') }}" class="btn">
+            <i class="fas fa-arrow-left"></i> Назад к производству
+        </a>
+    </div>
+</div>
+
+<style>
+.task-info {
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 6px;
+    margin-bottom: 20px;
+}
+
+.task-info p {
+    margin: 5px 0;
+}
+
+.materials-check {
+    margin-bottom: 20px;
+}
+
+tr.sufficient {
+    background-color: #d5f4e6;
+}
+
+tr.insufficient {
+    background-color: #fadbd8;
+}
+
+.status.success {
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.status.danger {
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
+.alert.danger {
+    background: #fadbd8;
+    color: #e74c3c;
+    border-left: 4px solid #e74c3c;
+}
+
+.actions {
+    text-align: center;
+}
+</style>
+{% endblock %}
+
+

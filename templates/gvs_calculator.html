@@ -1,0 +1,318 @@
+{% extends 'base.html' %}
+
+{% block title %}Калькулятор ГВС{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-shower"></i> Калькулятор ГВС
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form id="gvsCalculatorForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="capacity">Производительность (л/час):</label>
+                                    <input type="number" class="form-control" id="capacity" name="capacity" 
+                                           placeholder="Введите производительность в л/час" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="heatExchanger">Тип теплообменника:</label>
+                                    <select class="form-control" id="heatExchanger" name="heatExchanger">
+                                        <option value="plate">Пластинчатый</option>
+                                        <option value="shell">Кожухотрубный</option>
+                                        <option value="spiral">Спиральный</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="inletTemp">Температура входа (°C):</label>
+                                    <input type="number" class="form-control" id="inletTemp" name="inletTemp" 
+                                           value="5" placeholder="5">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="outletTemp">Температура выхода (°C):</label>
+                                    <input type="number" class="form-control" id="outletTemp" name="outletTemp" 
+                                           value="60" placeholder="60">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="maxPressure">Максимальное давление (МПа):</label>
+                                    <input type="number" class="form-control" id="maxPressure" name="maxPressure" 
+                                           value="1.0" step="0.1" placeholder="1.0">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="material">Материал:</label>
+                                    <select class="form-control" id="material" name="material">
+                                        <option value="stainless">Нержавеющая сталь</option>
+                                        <option value="carbon">Углеродистая сталь</option>
+                                        <option value="titanium">Титан</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="waterQuality">Качество воды:</label>
+                                    <select class="form-control" id="waterQuality" name="waterQuality">
+                                        <option value="drinking">Питьевая</option>
+                                        <option value="technical">Техническая</option>
+                                        <option value="distilled">Дистиллированная</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="insulation">Теплоизоляция:</label>
+                                    <select class="form-control" id="insulation" name="insulation">
+                                        <option value="none">Без изоляции</option>
+                                        <option value="basic">Базовая</option>
+                                        <option value="premium">Премиум</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="additionalOptions">Дополнительные опции:</label>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="pump" name="pump">
+                                        <label class="form-check-label" for="pump">
+                                            Циркуляционный насос
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="control" name="control">
+                                        <label class="form-check-label" for="control">
+                                            Система управления
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="monitoring" name="monitoring">
+                                        <label class="form-check-label" for="monitoring">
+                                            Мониторинг
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="backup" name="backup">
+                                        <label class="form-check-label" for="backup">
+                                            Резервное питание
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calculator"></i> Рассчитать стоимость
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Результаты расчета -->
+    <div class="row mt-4" id="calculationResults" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Результаты расчета ГВС
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Основные компоненты:</h5>
+                            <ul class="list-group" id="componentsList">
+                                <!-- Список компонентов будет заполнен JavaScript -->
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Стоимость:</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Базовая стоимость:</td>
+                                        <td id="baseCost">0 сум</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Дополнительные опции:</td>
+                                        <td id="optionsCost">0 сум</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Монтаж и настройка:</td>
+                                        <td id="installationCost">0 сум</td>
+                                    </tr>
+                                    <tr class="table-primary">
+                                        <td><strong>Итого:</strong></td>
+                                        <td id="totalCost"><strong>0 сум</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            
+                            <h5 class="mt-3">Технические характеристики:</h5>
+                            <div class="table-responsive">
+                                <table class="table table-sm">
+                                    <tr>
+                                        <td>Производительность:</td>
+                                        <td id="specCapacity">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Температура входа:</td>
+                                        <td id="specInletTemp">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Температура выхода:</td>
+                                        <td id="specOutletTemp">-</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Максимальное давление:</td>
+                                        <td id="specMaxPressure">-</td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-success" onclick="saveCalculation()">
+                            <i class="fas fa-save"></i> Сохранить расчет
+                        </button>
+                        <button class="btn btn-info" onclick="exportCalculation()">
+                            <i class="fas fa-download"></i> Экспорт в Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('gvsCalculatorForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateGVSCost();
+});
+
+function calculateGVSCost() {
+    const formData = new FormData(document.getElementById('gvsCalculatorForm'));
+    const capacity = parseFloat(formData.get('capacity'));
+    
+    if (!capacity || capacity <= 0) {
+        alert('Введите корректную производительность');
+        return;
+    }
+    
+    // Базовая стоимость (примерные расчеты)
+    let baseCost = capacity * 1000; // 1,000 сум за л/час
+    
+    // Коэффициенты в зависимости от типа теплообменника
+    const heatExchangerMultipliers = {
+        'plate': 1.0,
+        'shell': 1.3,
+        'spiral': 1.6
+    };
+    
+    // Коэффициенты материала
+    const materialMultipliers = {
+        'stainless': 1.0,
+        'carbon': 0.7,
+        'titanium': 2.5
+    };
+    
+    // Коэффициенты теплоизоляции
+    const insulationMultipliers = {
+        'none': 1.0,
+        'basic': 1.1,
+        'premium': 1.3
+    };
+    
+    const heatExchangerType = formData.get('heatExchanger');
+    const material = formData.get('material');
+    const insulation = formData.get('insulation');
+    
+    baseCost *= heatExchangerMultipliers[heatExchangerType];
+    baseCost *= materialMultipliers[material];
+    baseCost *= insulationMultipliers[insulation];
+    
+    // Дополнительные опции
+    let optionsCost = 0;
+    if (formData.get('pump')) optionsCost += capacity * 200;
+    if (formData.get('control')) optionsCost += capacity * 300;
+    if (formData.get('monitoring')) optionsCost += capacity * 150;
+    if (formData.get('backup')) optionsCost += capacity * 100;
+    
+    // Стоимость монтажа (20% от базовой стоимости)
+    const installationCost = baseCost * 0.20;
+    
+    const totalCost = baseCost + optionsCost + installationCost;
+    
+    // Обновляем результаты
+    document.getElementById('baseCost').textContent = baseCost.toLocaleString() + ' сум';
+    document.getElementById('optionsCost').textContent = optionsCost.toLocaleString() + ' сум';
+    document.getElementById('installationCost').textContent = installationCost.toLocaleString() + ' сум';
+    document.getElementById('totalCost').innerHTML = '<strong>' + totalCost.toLocaleString() + ' сум</strong>';
+    
+    // Обновляем технические характеристики
+    document.getElementById('specCapacity').textContent = capacity.toLocaleString() + ' л/час';
+    document.getElementById('specInletTemp').textContent = formData.get('inletTemp') + '°C';
+    document.getElementById('specOutletTemp').textContent = formData.get('outletTemp') + '°C';
+    document.getElementById('specMaxPressure').textContent = formData.get('maxPressure') + ' МПа';
+    
+    // Заполняем список компонентов
+    const componentsList = document.getElementById('componentsList');
+    componentsList.innerHTML = `
+        <li class="list-group-item">Теплообменник ${heatExchangerType} - ${(capacity * 500).toLocaleString()} сум</li>
+        <li class="list-group-item">Материал ${material} - ${(capacity * 200).toLocaleString()} сум</li>
+        <li class="list-group-item">Теплоизоляция ${insulation} - ${(capacity * 100).toLocaleString()} сум</li>
+        <li class="list-group-item">Трубопроводы и арматура - ${(capacity * 200).toLocaleString()} сум</li>
+    `;
+    
+    // Показываем результаты
+    document.getElementById('calculationResults').style.display = 'block';
+}
+
+function saveCalculation() {
+    // Здесь будет код для сохранения расчета в базу данных
+    alert('Расчет ГВС сохранен!');
+}
+
+function exportCalculation() {
+    // Здесь будет код для экспорта в Excel
+    alert('Экспорт в Excel будет реализован');
+}
+</script>
+{% endblock %}

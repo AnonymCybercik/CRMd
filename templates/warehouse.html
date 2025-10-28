@@ -1,0 +1,910 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard">
+  <h2><i class="fas fa-warehouse"></i> Панель склада</h2>
+  
+  <!-- Статистика склада -->
+  <div class="warehouse-overview">
+    <h3><i class="fas fa-chart-line"></i> Обзор склада</h3>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ total_items or 0 }}</div>
+        <div class="stat-label">Всего товаров</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ low_stock_items or 0 }}</div>
+        <div class="stat-label">Мало на складе</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ out_of_stock_items or 0 }}</div>
+        <div class="stat-label">Нет в наличии</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ total_value or 0 }}</div>
+        <div class="stat-label">Общая стоимость</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Остатки товаров -->
+  <div class="inventory-section">
+    <h3><i class="fas fa-boxes"></i> Остатки товаров</h3>
+    <div class="inventory-table">
+      <div class="table-header">
+        <div class="col-id">ID</div>
+        <div class="col-name">Название</div>
+        <div class="col-quantity">Кол-во</div>
+        <div class="col-unit">Ед.</div>
+        <div class="col-price">Цена</div>
+        <div class="col-total">Стоимость</div>
+        <div class="col-status">Статус</div>
+        <div class="col-actions">Действия</div>
+      </div>
+      
+      {% for item in inventory_items[:10] if inventory_items %}
+      <div class="table-row">
+        <div class="col-id">{{ item.id }}</div>
+        <div class="col-name">{{ item.name or 'N/A' }}</div>
+        <div class="col-quantity">{{ item.quantity or 0 }}</div>
+        <div class="col-unit">{{ item.unit or 'шт' }}</div>
+        <div class="col-price">{{ "{:,}".format(item.price_per_unit or 0) }} сум</div>
+        <div class="col-total">{{ "{:,}".format((item.quantity or 0) * (item.price_per_unit or 0)) }} сум</div>
+        <div class="col-status">
+          {% if (item.quantity or 0) == 0 %}
+            <span class="status-badge status-out">Нет в наличии</span>
+          {% elif (item.quantity or 0) < (item.min_stock or 10) %}
+            <span class="status-badge status-low">Мало</span>
+          {% else %}
+            <span class="status-badge status-good">В наличии</span>
+          {% endif %}
+        </div>
+        <div class="col-actions">
+          <button class="btn-small btn-info" onclick="viewItem({{ item.id }})">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="btn-small btn-warning" onclick="editItem({{ item.id }})">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-small btn-success" onclick="addStock({{ item.id }})">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <div class="no-items">Нет товаров на складе</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Каталог ресурсов -->
+  <div class="resources-catalog">
+    <h3><i class="fas fa-list"></i> Каталог ресурсов</h3>
+    <div class="resources-table">
+      <div class="table-header">
+        <div class="col-id">ID</div>
+        <div class="col-name">Название</div>
+        <div class="col-company">Компания</div>
+        <div class="col-price">Цена</div>
+        <div class="col-quality">Качество</div>
+        <div class="col-actions">Действия</div>
+      </div>
+      
+      {% for resource in resources[:10] if resources %}
+      <div class="table-row">
+        <div class="col-id">{{ resource.id }}</div>
+        <div class="col-name">{{ resource.name or 'N/A' }}</div>
+        <div class="col-company">{{ resource.company.name if resource.company else 'N/A' }}</div>
+        <div class="col-price">{{ "{:,}".format(resource.price_per_unit or 0) }} сум/{{ resource.unit or 'шт' }}</div>
+        <div class="col-quality">
+          <span class="quality-badge quality-{{ resource.quality_rating or 'good' }}">
+            {{ resource.quality_rating or 'Хорошее' }}
+          </span>
+        </div>
+        <div class="col-actions">
+          <button class="btn-small btn-info" onclick="viewResource({{ resource.id }})">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="btn-small btn-success" onclick="orderResource({{ resource.id }})">
+            <i class="fas fa-shopping-cart"></i>
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <div class="no-resources">Нет ресурсов в каталоге</div>
+      {% endfor %}
+    </div>
+</div>
+
+  <!-- Управление складом -->
+  <div class="warehouse-management">
+    <h3><i class="fas fa-cogs"></i> Управление складом</h3>
+    <div class="management-actions">
+      <div class="action-card">
+        <i class="fas fa-plus-circle"></i>
+        <h4>Поступление товара</h4>
+        <p>Зарегистрировать поступление товара на склад</p>
+        <button class="btn-primary" onclick="showReceiptModal()">
+          <i class="fas fa-plus"></i> Поступление
+        </button>
+      </div>
+      
+      <div class="action-card">
+        <i class="fas fa-minus-circle"></i>
+        <h4>Отгрузка товара</h4>
+        <p>Зарегистрировать отгрузку товара со склада</p>
+        <button class="btn-primary" onclick="showShipmentModal()">
+          <i class="fas fa-truck"></i> Отгрузка
+        </button>
+      </div>
+      
+      <div class="action-card">
+        <i class="fas fa-clipboard-check"></i>
+        <h4>Инвентаризация</h4>
+        <p>Провести инвентаризацию склада</p>
+        <button class="btn-primary" onclick="showInventoryModal()">
+          <i class="fas fa-clipboard"></i> Инвентаризация
+        </button>
+      </div>
+      
+      <div class="action-card">
+        <i class="fas fa-barcode"></i>
+        <h4>Сканер штрих-кодов</h4>
+        <p>Сканировать товары по штрих-кодам</p>
+        <button class="btn-primary" onclick="showScannerModal()">
+          <i class="fas fa-qrcode"></i> Сканер
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Быстрые действия -->
+  <div class="quick-actions">
+    <h3><i class="fas fa-bolt"></i> Быстрые действия</h3>
+    <div class="action-buttons">
+      <a href="#" class="action-btn" onclick="showReportsModal()">
+        <i class="fas fa-chart-bar"></i>
+        <span>Отчеты по складу</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showZonesModal()">
+        <i class="fas fa-map-marker-alt"></i>
+        <span>Зоны склада</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showAlertsModal()">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Уведомления</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showSettingsModal()">
+        <i class="fas fa-cog"></i>
+        <span>Настройки</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Модальные окна -->
+<div id="receiptModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeReceiptModal()">&times;</span>
+    <h3>Поступление товара</h3>
+    <form class="receipt-form" onsubmit="processReceipt(event)">
+      <div class="form-group">
+        <label for="item_name">Название товара</label>
+        <input type="text" id="item_name" name="item_name" required>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="quantity">Количество</label>
+          <input type="number" id="quantity" name="quantity" min="1" required>
+        </div>
+        <div class="form-group">
+          <label for="unit">Единица измерения</label>
+          <select id="unit" name="unit">
+            <option value="шт">Штуки</option>
+            <option value="м">Метры</option>
+            <option value="кг">Килограммы</option>
+            <option value="л">Литры</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="price">Цена за единицу</label>
+        <input type="number" id="price" name="price" step="0.01" required>
+      </div>
+      <button type="submit" class="btn-primary">Зарегистрировать поступление</button>
+    </form>
+  </div>
+</div>
+
+<div id="shipmentModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeShipmentModal()">&times;</span>
+    <h3>Отгрузка товара</h3>
+    <form class="shipment-form" onsubmit="processShipment(event)">
+      <div class="form-group">
+        <label for="shipment_item">Товар</label>
+        <select id="shipment_item" name="shipment_item" required>
+          <option value="">-- Выберите товар --</option>
+          {% for item in inventory_items if inventory_items %}
+          <option value="{{ item.id }}">{{ item.name }} (Остаток: {{ item.quantity or 0 }})</option>
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="shipment_quantity">Количество для отгрузки</label>
+        <input type="number" id="shipment_quantity" name="shipment_quantity" min="1" required>
+      </div>
+      <div class="form-group">
+        <label for="destination">Назначение</label>
+        <input type="text" id="destination" name="destination" placeholder="Куда отгружается товар">
+      </div>
+      <button type="submit" class="btn-primary">Зарегистрировать отгрузку</button>
+    </form>
+  </div>
+</div>
+
+<div id="inventoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeInventoryModal()">&times;</span>
+    <h3>Инвентаризация</h3>
+    <div class="inventory-controls">
+      <button class="btn-primary" onclick="startInventory()">Начать инвентаризацию</button>
+      <button class="btn-secondary" onclick="viewInventoryResults()">Результаты</button>
+    </div>
+  </div>
+</div>
+
+<div id="scannerModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeScannerModal()">&times;</span>
+    <h3>Сканер штрих-кодов</h3>
+    <div class="scanner-interface">
+      <div class="scanner-placeholder">
+        <i class="fas fa-qrcode"></i>
+        <p>Наведите камеру на штрих-код</p>
+      </div>
+      <button class="btn-primary" onclick="startScanning()">Начать сканирование</button>
+    </div>
+  </div>
+</div>
+
+<div id="reportsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeReportsModal()">&times;</span>
+    <h3>Отчеты по складу</h3>
+    <div class="report-options">
+      <button class="btn-primary" onclick="generateReport('stock')">Отчет по остаткам</button>
+      <button class="btn-primary" onclick="generateReport('movements')">Отчет по движениям</button>
+      <button class="btn-primary" onclick="generateReport('value')">Отчет по стоимости</button>
+    </div>
+  </div>
+</div>
+
+<div id="zonesModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeZonesModal()">&times;</span>
+    <h3>Зоны склада</h3>
+    <div class="zones-map">
+      <div class="zone-item">
+        <span class="zone-name">Зона A - Трубы</span>
+        <span class="zone-capacity">Заполнено: 75%</span>
+      </div>
+      <div class="zone-item">
+        <span class="zone-name">Зона B - Котлы</span>
+        <span class="zone-capacity">Заполнено: 45%</span>
+      </div>
+      <div class="zone-item">
+        <span class="zone-name">Зона C - Радиаторы</span>
+        <span class="zone-capacity">Заполнено: 90%</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="alertsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAlertsModal()">&times;</span>
+    <h3>Уведомления склада</h3>
+    <div class="alerts-list">
+      <div class="alert-item warning">
+        <i class="fas fa-exclamation-triangle"></i>
+        <span>Труба стальная 50мм - мало на складе (остаток: 5 м)</span>
+        <span class="alert-time">2 часа назад</span>
+      </div>
+      <div class="alert-item info">
+        <i class="fas fa-info-circle"></i>
+        <span>Поступление котлов газовых 30кВт - 10 шт</span>
+        <span class="alert-time">1 день назад</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="settingsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeSettingsModal()">&times;</span>
+    <h3>Настройки склада</h3>
+    <div class="settings-options">
+      <div class="setting-item">
+        <label>Минимальный остаток для уведомления</label>
+        <input type="number" value="10" min="1">
+      </div>
+      <div class="setting-item">
+        <label>Автоматическое пополнение</label>
+        <input type="checkbox" checked>
+      </div>
+      <div class="setting-item">
+        <label>Уведомления по email</label>
+        <input type="checkbox" checked>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="saveSettings()">Сохранить настройки</button>
+  </div>
+</div>
+
+<style>
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dashboard h2 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 2em;
+  text-align: center;
+}
+
+.warehouse-overview, .inventory-section, .resources-catalog, .warehouse-management, .quick-actions {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.warehouse-overview h3, .inventory-section h3, .resources-catalog h3, .warehouse-management h3, .quick-actions h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.stat-number {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+.inventory-table, .resources-table {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+/* Стили для таблицы инвентаря (8 колонок) */
+.inventory-table .table-header,
+.inventory-table .table-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 80px 60px 100px 120px 100px 120px;
+  background: #f8f9fa;
+  font-weight: bold;
+  padding: 12px;
+  border-bottom: 2px solid #ddd;
+  gap: 10px;
+}
+
+.inventory-table .table-row {
+  background: white;
+  font-weight: normal;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+}
+
+/* Стили для таблицы ресурсов (6 колонок) */
+.resources-table .table-header,
+.resources-table .table-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 150px 100px 100px 120px;
+  background: #f8f9fa;
+  font-weight: bold;
+  padding: 12px;
+  border-bottom: 2px solid #ddd;
+  gap: 10px;
+}
+
+.resources-table .table-row {
+  background: white;
+  font-weight: normal;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+}
+
+.table-row:hover {
+  background: #f8f9fa;
+}
+
+.status-badge, .quality-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.status-good {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-low {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-out {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.quality-excellent {
+  background: #28a745;
+  color: white;
+}
+
+.quality-good {
+  background: #17a2b8;
+  color: white;
+}
+
+.quality-average {
+  background: #ffc107;
+  color: #000;
+}
+
+.quality-poor {
+  background: #dc3545;
+  color: white;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8em;
+  margin: 0 2px;
+}
+
+.btn-info {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #000;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.no-items, .no-resources {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 40px;
+}
+
+.management-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.action-card {
+  background: #f8f9fa;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  border-left: 4px solid #667eea;
+}
+
+.action-card i {
+  font-size: 2em;
+  color: #667eea;
+  margin-bottom: 10px;
+}
+
+.action-card h4 {
+  color: #333;
+  margin-bottom: 10px;
+}
+
+.action-card p {
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 0.9em;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+  justify-content: center;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.action-btn i {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.action-btn span {
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Модальные окна */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 600px;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  width: 100%;
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+.scanner-interface {
+  text-align: center;
+  padding: 40px;
+}
+
+.scanner-placeholder {
+  background: #f8f9fa;
+  padding: 40px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+}
+
+.scanner-placeholder i {
+  font-size: 4em;
+  color: #667eea;
+  margin-bottom: 15px;
+}
+
+.report-options, .inventory-controls {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.zones-map, .alerts-list {
+  margin: 20px 0;
+}
+
+.zone-item, .alert-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.alert-item {
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.alert-item.warning {
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+}
+
+.alert-item.info {
+  background: #d1ecf1;
+  border-left: 4px solid #17a2b8;
+}
+
+.alert-time {
+  color: #666;
+  font-size: 0.8em;
+  margin-top: 5px;
+}
+
+.settings-options {
+  margin: 20px 0;
+}
+
+.setting-item {
+    display: flex;
+  justify-content: space-between;
+    align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-header, .table-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .action-buttons, .management-actions {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+function viewItem(itemId) {
+  alert(`Просмотр товара #${itemId}`);
+}
+
+function editItem(itemId) {
+  alert(`Редактирование товара #${itemId}`);
+}
+
+function addStock(itemId) {
+  alert(`Добавление товара #${itemId} на склад`);
+}
+
+function viewResource(resourceId) {
+  alert(`Просмотр ресурса #${resourceId}`);
+}
+
+function orderResource(resourceId) {
+  alert(`Заказ ресурса #${resourceId}`);
+}
+
+function showReceiptModal() {
+  document.getElementById('receiptModal').style.display = 'block';
+}
+
+function closeReceiptModal() {
+  document.getElementById('receiptModal').style.display = 'none';
+}
+
+function showShipmentModal() {
+  document.getElementById('shipmentModal').style.display = 'block';
+}
+
+function closeShipmentModal() {
+  document.getElementById('shipmentModal').style.display = 'none';
+}
+
+function showInventoryModal() {
+  document.getElementById('inventoryModal').style.display = 'block';
+}
+
+function closeInventoryModal() {
+  document.getElementById('inventoryModal').style.display = 'none';
+}
+
+function showScannerModal() {
+  document.getElementById('scannerModal').style.display = 'block';
+}
+
+function closeScannerModal() {
+  document.getElementById('scannerModal').style.display = 'none';
+}
+
+function showReportsModal() {
+  document.getElementById('reportsModal').style.display = 'block';
+}
+
+function closeReportsModal() {
+  document.getElementById('reportsModal').style.display = 'none';
+}
+
+function showZonesModal() {
+  document.getElementById('zonesModal').style.display = 'block';
+}
+
+function closeZonesModal() {
+  document.getElementById('zonesModal').style.display = 'none';
+}
+
+function showAlertsModal() {
+  document.getElementById('alertsModal').style.display = 'block';
+}
+
+function closeAlertsModal() {
+  document.getElementById('alertsModal').style.display = 'none';
+}
+
+function showSettingsModal() {
+  document.getElementById('settingsModal').style.display = 'block';
+}
+
+function closeSettingsModal() {
+  document.getElementById('settingsModal').style.display = 'none';
+}
+
+function processReceipt(event) {
+  event.preventDefault();
+  alert('Поступление товара зарегистрировано!');
+  closeReceiptModal();
+}
+
+function processShipment(event) {
+  event.preventDefault();
+  alert('Отгрузка товара зарегистрирована!');
+  closeShipmentModal();
+}
+
+function startInventory() {
+  alert('Инвентаризация начата!');
+  closeInventoryModal();
+}
+
+function viewInventoryResults() {
+  alert('Просмотр результатов инвентаризации');
+}
+
+function startScanning() {
+  alert('Сканирование начато!');
+}
+
+function generateReport(type) {
+  alert(`Генерация отчета: ${type}`);
+  closeReportsModal();
+}
+
+function saveSettings() {
+  alert('Настройки сохранены!');
+  closeSettingsModal();
+}
+
+// Закрытие модальных окон при клике вне их
+window.onclick = function(event) {
+  const modals = ['receiptModal', 'shipmentModal', 'inventoryModal', 'scannerModal', 
+                  'reportsModal', 'zonesModal', 'alertsModal', 'settingsModal'];
+  modals.forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+}
+</script>
+{% endblock %}

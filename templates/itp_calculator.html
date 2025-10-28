@@ -1,0 +1,275 @@
+{% extends 'base.html' %}
+
+{% block title %}Калькулятор ИТП{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calculator"></i> Калькулятор ИТП
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <form id="itpCalculatorForm">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="power">Мощность (кВт):</label>
+                                    <input type="number" class="form-control" id="power" name="power" 
+                                           placeholder="Введите мощность в кВт" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="heatExchanger">Тип теплообменника:</label>
+                                    <select class="form-control" id="heatExchanger" name="heatExchanger">
+                                        <option value="plate">Пластинчатый</option>
+                                        <option value="shell">Кожухотрубный</option>
+                                        <option value="spiral">Спиральный</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="pumpType">Тип насоса:</label>
+                                    <select class="form-control" id="pumpType" name="pumpType">
+                                        <option value="circulation">Циркуляционный</option>
+                                        <option value="centrifugal">Центробежный</option>
+                                        <option value="vortex">Вихревой</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="automation">Уровень автоматизации:</label>
+                                    <select class="form-control" id="automation" name="automation">
+                                        <option value="basic">Базовая</option>
+                                        <option value="standard">Стандартная</option>
+                                        <option value="advanced">Продвинутая</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="maxTemp">Максимальная температура (°C):</label>
+                                    <input type="number" class="form-control" id="maxTemp" name="maxTemp" 
+                                           value="95" placeholder="95">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="maxPressure">Максимальное давление (МПа):</label>
+                                    <input type="number" class="form-control" id="maxPressure" name="maxPressure" 
+                                           value="1.6" step="0.1" placeholder="1.6">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="installation">Тип установки:</label>
+                                    <select class="form-control" id="installation" name="installation">
+                                        <option value="floor">Напольная</option>
+                                        <option value="wall">Настенная</option>
+                                        <option value="mobile">Мобильная</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="connection">Тип подключения:</label>
+                                    <select class="form-control" id="connection" name="connection">
+                                        <option value="flange">Фланцевое</option>
+                                        <option value="threaded">Резьбовое</option>
+                                        <option value="welded">Сварное</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="additionalOptions">Дополнительные опции:</label>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="insulation" name="insulation">
+                                        <label class="form-check-label" for="insulation">
+                                            Теплоизоляция
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="monitoring" name="monitoring">
+                                        <label class="form-check-label" for="monitoring">
+                                            Система мониторинга
+                                        </label>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="backup" name="backup">
+                                        <label class="form-check-label" for="backup">
+                                            Резервное питание
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-calculator"></i> Рассчитать стоимость
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Результаты расчета -->
+    <div class="row mt-4" id="calculationResults" style="display: none;">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i> Результаты расчета
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Основные компоненты:</h5>
+                            <ul class="list-group" id="componentsList">
+                                <!-- Список компонентов будет заполнен JavaScript -->
+                            </ul>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Стоимость:</h5>
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <tr>
+                                        <td>Базовая стоимость:</td>
+                                        <td id="baseCost">0 сум</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Дополнительные опции:</td>
+                                        <td id="optionsCost">0 сум</td>
+                                    </tr>
+                                    <tr>
+                                        <td>Монтаж и настройка:</td>
+                                        <td id="installationCost">0 сум</td>
+                                    </tr>
+                                    <tr class="table-primary">
+                                        <td><strong>Итого:</strong></td>
+                                        <td id="totalCost"><strong>0 сум</strong></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <button class="btn btn-success" onclick="saveCalculation()">
+                            <i class="fas fa-save"></i> Сохранить расчет
+                        </button>
+                        <button class="btn btn-info" onclick="exportCalculation()">
+                            <i class="fas fa-download"></i> Экспорт в Excel
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('itpCalculatorForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    calculateITPCost();
+});
+
+function calculateITPCost() {
+    const formData = new FormData(document.getElementById('itpCalculatorForm'));
+    const power = parseFloat(formData.get('power'));
+    
+    if (!power || power <= 0) {
+        alert('Введите корректную мощность');
+        return;
+    }
+    
+    // Базовая стоимость (примерные расчеты)
+    let baseCost = power * 50000; // 50,000 сум за кВт
+    
+    // Коэффициенты в зависимости от типа теплообменника
+    const heatExchangerMultipliers = {
+        'plate': 1.0,
+        'shell': 1.2,
+        'spiral': 1.5
+    };
+    
+    // Коэффициенты автоматизации
+    const automationMultipliers = {
+        'basic': 1.0,
+        'standard': 1.3,
+        'advanced': 1.8
+    };
+    
+    const heatExchangerType = formData.get('heatExchanger');
+    const automationLevel = formData.get('automation');
+    
+    baseCost *= heatExchangerMultipliers[heatExchangerType];
+    baseCost *= automationMultipliers[automationLevel];
+    
+    // Дополнительные опции
+    let optionsCost = 0;
+    if (formData.get('insulation')) optionsCost += power * 5000;
+    if (formData.get('monitoring')) optionsCost += power * 10000;
+    if (formData.get('backup')) optionsCost += power * 15000;
+    
+    // Стоимость монтажа (15% от базовой стоимости)
+    const installationCost = baseCost * 0.15;
+    
+    const totalCost = baseCost + optionsCost + installationCost;
+    
+    // Обновляем результаты
+    document.getElementById('baseCost').textContent = baseCost.toLocaleString() + ' сум';
+    document.getElementById('optionsCost').textContent = optionsCost.toLocaleString() + ' сум';
+    document.getElementById('installationCost').textContent = installationCost.toLocaleString() + ' сум';
+    document.getElementById('totalCost').innerHTML = '<strong>' + totalCost.toLocaleString() + ' сум</strong>';
+    
+    // Заполняем список компонентов
+    const componentsList = document.getElementById('componentsList');
+    componentsList.innerHTML = `
+        <li class="list-group-item">Теплообменник ${heatExchangerType} - ${(power * 20000).toLocaleString()} сум</li>
+        <li class="list-group-item">Насос ${formData.get('pumpType')} - ${(power * 15000).toLocaleString()} сум</li>
+        <li class="list-group-item">Система управления - ${(power * 10000).toLocaleString()} сум</li>
+        <li class="list-group-item">Трубопроводы и арматура - ${(power * 5000).toLocaleString()} сум</li>
+    `;
+    
+    // Показываем результаты
+    document.getElementById('calculationResults').style.display = 'block';
+}
+
+function saveCalculation() {
+    // Здесь будет код для сохранения расчета в базу данных
+    alert('Расчет сохранен!');
+}
+
+function exportCalculation() {
+    // Здесь будет код для экспорта в Excel
+    alert('Экспорт в Excel будет реализован');
+}
+</script>
+{% endblock %}

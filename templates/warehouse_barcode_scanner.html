@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+
+{% block title %}Сканер штрих-кодов{% endblock %}
+
+{% block content %}
+<h2><i class="fas fa-barcode"></i> Сканер штрих-кодов</h2>
+
+<div class="card">
+    <h3><i class="fas fa-qrcode"></i> Сканирование товаров</h3>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <div style="background: #f8f9fa; border: 2px dashed #dee2e6; border-radius: 10px; padding: 40px; margin: 20px 0;">
+            <i class="fas fa-camera" style="font-size: 48px; color: #6c757d; margin-bottom: 15px;"></i>
+            <h4>Наведите камеру на штрих-код</h4>
+            <p style="color: #6c757d;">Автоматическое распознавание товаров</p>
+        </div>
+        
+        <button class="btn" onclick="startScanning()" style="margin: 10px;">
+            <i class="fas fa-play"></i> Начать сканирование
+        </button>
+        
+        <button class="btn" onclick="stopScanning()" style="margin: 10px; background: #dc3545;">
+            <i class="fas fa-stop"></i> Остановить
+        </button>
+    </div>
+</div>
+
+<div class="card">
+    <h3><i class="fas fa-list"></i> Отсканированные товары</h3>
+    
+    <div id="scanned-items">
+        {% if items %}
+            {% for item in items %}
+            <div class="item-card" style="display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; margin: 10px 0;">
+                <div>
+                    <strong>{{ item.name }}</strong>
+                    <br>
+                    <small style="color: #6c757d;">Код: {{ item.barcode or 'Не указан' }}</small>
+                </div>
+                <div style="text-align: right;">
+                    <span class="badge badge-success">{{ item.quantity }} шт.</span>
+                    <br>
+                    <small style="color: #6c757d;">{{ item.location or 'Местоположение не указано' }}</small>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="text-align: center; color: #6c757d; padding: 20px;">
+                <i class="fas fa-info-circle"></i> Товары не отсканированы
+            </p>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+let isScanning = false;
+
+function startScanning() {
+    isScanning = true;
+    alert('Сканирование начато! Наведите камеру на штрих-код товара.');
+    
+    // Симуляция сканирования
+    setTimeout(() => {
+        if (isScanning) {
+            addScannedItem('Товар ' + Math.floor(Math.random() * 1000), '1234567890', Math.floor(Math.random() * 10) + 1);
+        }
+    }, 2000);
+}
+
+function stopScanning() {
+    isScanning = false;
+    alert('Сканирование остановлено.');
+}
+
+function addScannedItem(name, barcode, quantity) {
+    const container = document.getElementById('scanned-items');
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'item-card';
+    itemDiv.style.cssText = 'display: flex; justify-content: space-between; align-items: center; padding: 15px; border: 1px solid #dee2e6; border-radius: 8px; margin: 10px 0;';
+    
+    itemDiv.innerHTML = `
+        <div>
+            <strong>${name}</strong>
+            <br>
+            <small style="color: #6c757d;">Код: ${barcode}</small>
+        </div>
+        <div style="text-align: right;">
+            <span class="badge badge-success">${quantity} шт.</span>
+            <br>
+            <small style="color: #6c757d;">Склад A-1</small>
+        </div>
+    `;
+    
+    container.appendChild(itemDiv);
+}
+</script>
+{% endblock %}
+
+

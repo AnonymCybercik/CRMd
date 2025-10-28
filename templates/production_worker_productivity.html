@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Производительность рабочих{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Производительность рабочих</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary" onclick="showModal('Новая запись', 'Функция добавления новой записи о производительности будет добавлена в следующей версии', 'info')">
+                                <i class="fas fa-plus"></i> Новая запись
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Поиск рабочих...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Средняя производительность</h5>
+                                    <h3>{{ productivity_stats.average }}%</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Лучшие рабочие</h5>
+                                    <h3>{{ productivity_stats.top_performers }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Требуют внимания</h5>
+                                    <h3>{{ productivity_stats.need_attention }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Всего рабочих</h5>
+                                    <h3>{{ productivity_stats.total_workers }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Рабочий</th>
+                                    <th>Должность</th>
+                                    <th>Производительность</th>
+                                    <th>Выполнено задач</th>
+                                    <th>Качество работы</th>
+                                    <th>Последняя активность</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for worker in workers %}
+                                <tr>
+                                    <td>{{ worker.name }}</td>
+                                    <td>{{ worker.position }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-{{ 'success' if worker.productivity >= 80 else 'warning' if worker.productivity >= 60 else 'danger' }}" 
+                                                 style="width: {{ worker.productivity }}%">
+                                                {{ worker.productivity }}%
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>{{ worker.completed_tasks }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if worker.quality >= 4 else 'warning' if worker.quality >= 3 else 'danger' }}">
+                                            {{ 'Отлично' if worker.quality >= 4 else 'Хорошо' if worker.quality >= 3 else 'Требует улучшения' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ worker.last_activity.strftime('%d.%m.%Y %H:%M') if worker.last_activity else 'Не указана' }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewWorker({{ worker.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editWorker({{ worker.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" onclick="viewTasks({{ worker.id }})">
+                                            <i class="fas fa-tasks"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="7" class="text-center">Рабочие не найдены</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewWorker(workerId) {
+    showModal('Просмотр рабочего', `Просмотр информации о рабочем #${workerId} будет добавлен в следующей версии`, 'info');
+}
+
+function editWorker(workerId) {
+    showModal('Редактирование рабочего', `Редактирование информации о рабочем #${workerId} будет добавлено в следующей версии`, 'info');
+}
+
+function viewTasks(workerId) {
+    showModal('Задачи рабочего', `Просмотр задач рабочего #${workerId} будет добавлен в следующей версии`, 'info');
+}
+</script>
+{% endblock %}
+
+
+
+
+

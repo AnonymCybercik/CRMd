@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Teplo-Resurs CRM</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+<div class="container">
+    <header class="header">
+        <h1><i class="fas fa-chart-line"></i> Teplo-Resurs CRM</h1>
+        {% if current_user.is_authenticated %}
+            <div class="nav">
+                <a href="{{ url_for('index') }}"><i class="fas fa-home"></i> Главная</a>
+                {% if current_user.has_role('director') %}<a href="{{ url_for('director_dashboard') }}"><i class="fas fa-crown"></i> Директор</a>{% endif %}
+                {% if current_user.has_role('manager') %}<a href="{{ url_for('manager_dashboard') }}"><i class="fas fa-users"></i> Менеджер</a>{% endif %}
+                {% if current_user.has_role('supplier') %}<a href="{{ url_for('supplier_dashboard') }}"><i class="fas fa-truck"></i> Снабжение</a>{% endif %}
+                {% if current_user.has_role('warehouse') %}<a href="{{ url_for('warehouse_dashboard') }}"><i class="fas fa-warehouse"></i> Склад</a>{% endif %}
+                {% if current_user.has_role('production') %}<a href="{{ url_for('production_dashboard') }}"><i class="fas fa-cogs"></i> Производство</a>{% endif %}
+                {% if current_user.has_role('accountant') %}<a href="{{ url_for('accountant_dashboard') }}"><i class="fas fa-calculator"></i> Бухгалтер</a>{% endif %}
+                <a href="{{ url_for('logout') }}"><i class="fas fa-sign-out-alt"></i> Выход</a>
+            </div>
+        {% endif %}
+    </header>
+    <main class="main">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for cat, msg in messages %}
+              <div class="flash {{ cat }}" onclick="this.style.display='none'">
+                <i class="fas fa-{% if cat == 'success' %}check-circle{% elif cat == 'danger' %}exclamation-triangle{% else %}info-circle{% endif %}"></i>
+                {{ msg }}
+                <span style="float: right; cursor: pointer; font-weight: bold;">&times;</span>
+              </div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </main>
+</div>
+
+<script>
+// Автоматическое скрытие уведомлений через 5 секунд
+document.addEventListener('DOMContentLoaded', function() {
+    const flashes = document.querySelectorAll('.flash');
+    flashes.forEach(function(flash) {
+        setTimeout(function() {
+            flash.style.opacity = '0';
+            flash.style.transform = 'translateX(100%)';
+            setTimeout(function() {
+                flash.style.display = 'none';
+            }, 300);
+        }, 5000);
+    });
+});
+
+// Подтверждение удаления с красивым диалогом
+function confirmDelete(message) {
+    return confirm(message || 'Вы уверены, что хотите удалить этот элемент?');
+}
+
+// Анимация появления карточек
+document.addEventListener('DOMContentLoaded', function() {
+    const cards = document.querySelectorAll('.card');
+    cards.forEach(function(card, index) {
+        card.style.animationDelay = (index * 0.1) + 's';
+    });
+});
+</script>
+</body>
+</html>

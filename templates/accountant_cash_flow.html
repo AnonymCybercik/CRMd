@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+
+{% block title %}Денежный поток{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Денежный поток</h3>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <button class="btn btn-primary" onclick="showModal('Новая операция', 'Функция добавления новой операции денежного потока будет добавлена в следующей версии', 'info')">
+                                <i class="fas fa-plus"></i> Новая операция
+                            </button>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="input-group">
+                                <input type="text" class="form-control" placeholder="Поиск операций...">
+                                <div class="input-group-append">
+                                    <button class="btn btn-outline-secondary" type="button">
+                                        <i class="fas fa-search"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Приход</h5>
+                                    <h3>{{ "{:,.2f}".format(cash_flow_stats.income) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Расход</h5>
+                                    <h3>{{ "{:,.2f}".format(cash_flow_stats.expense) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Баланс</h5>
+                                    <h3>{{ "{:,.2f}".format(cash_flow_stats.balance) }} сум</h3>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <h5 class="card-title">Операций</h5>
+                                    <h3>{{ cash_flow_stats.total_operations }}</h3>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="table-responsive mt-4">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Дата</th>
+                                    <th>Тип операции</th>
+                                    <th>Описание</th>
+                                    <th>Сумма</th>
+                                    <th>Категория</th>
+                                    <th>Действия</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for operation in cash_flow_operations %}
+                                <tr>
+                                    <td>{{ operation.date.strftime('%d.%m.%Y') if operation.date else 'Не указана' }}</td>
+                                    <td>
+                                        <span class="badge badge-{{ 'success' if operation.type == 'income' else 'danger' }}">
+                                            {{ 'Приход' if operation.type == 'income' else 'Расход' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ operation.description }}</td>
+                                    <td class="{{ 'text-success' if operation.type == 'income' else 'text-danger' }}">
+                                        {{ ('+' if operation.type == 'income' else '-') + "{:,.2f}".format(operation.amount) }} сум
+                                    </td>
+                                    <td>{{ operation.category }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="viewOperation({{ operation.id }})">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" onclick="editOperation({{ operation.id }})">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-danger" onclick="deleteOperation({{ operation.id }})">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center">Операции денежного потока не найдены</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function viewOperation(operationId) {
+    showModal('Просмотр операции', `Просмотр операции денежного потока #${operationId} будет добавлен в следующей версии`, 'info');
+}
+
+function editOperation(operationId) {
+    showModal('Редактирование операции', `Редактирование операции денежного потока #${operationId} будет добавлено в следующей версии`, 'info');
+}
+
+function deleteOperation(operationId) {
+    showModal('Удаление операции', `Удаление операции денежного потока #${operationId} будет добавлено в следующей версии`, 'warning');
+}
+</script>
+{% endblock %}
+
+
+
+
+

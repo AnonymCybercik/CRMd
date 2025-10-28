@@ -1,0 +1,1088 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard">
+  <h2><i class="fas fa-truck"></i> Панель снабжения</h2>
+  
+  <!-- Статистика поставок -->
+  <div class="supply-overview">
+    <h3><i class="fas fa-chart-line"></i> Обзор поставок</h3>
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-number">{{ total_requests or 0 }}</div>
+        <div class="stat-label">Всего запросов</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ pending_requests or 0 }}</div>
+        <div class="stat-label">Ожидают</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ approved_requests or 0 }}</div>
+        <div class="stat-label">Одобрены</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ delivered_requests or 0 }}</div>
+        <div class="stat-label">Доставлены</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Управление ресурсами -->
+  <div class="resources-section">
+    <h3><i class="fas fa-boxes"></i> Управление ресурсами</h3>
+    <div class="resources-table">
+      <div class="table-header">
+        <div class="col-id">ID</div>
+        <div class="col-name">Название</div>
+        <div class="col-company">Компания</div>
+        <div class="col-price">Цена</div>
+        <div class="col-quality">Качество</div>
+        <div class="col-actions">Действия</div>
+      </div>
+      
+      {% for resource in resources[:10] if resources %}
+      <div class="table-row">
+        <div class="col-id">{{ resource.id }}</div>
+        <div class="col-name">{{ resource.name or 'N/A' }}</div>
+        <div class="col-company">{{ resource.company.name if resource.company else 'N/A' }}</div>
+        <div class="col-price">{{ "{:,}".format(resource.price_per_unit or 0) }} сум</div>
+        <div class="col-quality">
+          <span class="quality-badge quality-{{ resource.quality_rating or 'good' }}">
+            {{ resource.quality_rating or 'Хорошее' }}
+          </span>
+        </div>
+        <div class="col-actions">
+          <button class="btn-small btn-info" onclick="viewResource({{ resource.id }})">
+            <i class="fas fa-eye"></i>
+          </button>
+          <button class="btn-small btn-warning" onclick="editResource({{ resource.id }})">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-small btn-success" onclick="addToCart({{ resource.id }})">
+            <i class="fas fa-cart-plus"></i>
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <div class="no-resources">Нет ресурсов</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Запросы на поставку -->
+  <div class="requests-section">
+    <h3><i class="fas fa-clipboard-list"></i> Запросы на поставку</h3>
+    <div class="requests-table">
+      <div class="table-header">
+        <div class="col-id">ID</div>
+        <div class="col-resource">Ресурс</div>
+        <div class="col-quantity">Количество</div>
+        <div class="col-cost">Стоимость</div>
+        <div class="col-status">Статус</div>
+        <div class="col-actions">Действия</div>
+      </div>
+      
+      {% for request in requests[:10] if requests %}
+      <div class="table-row">
+        <div class="col-id">{{ request.id }}</div>
+        <div class="col-resource">{{ request.resource.name if request.resource else 'N/A' }}</div>
+        <div class="col-quantity">{{ request.quantity or 0 }} шт</div>
+        <div class="col-cost">{{ "{:,}".format(request.total_cost or 0) }} сум</div>
+        <div class="col-status">
+          <span class="status-badge status-{{ request.status or 'pending' }}">
+            {{ request.status or 'Ожидает' }}
+          </span>
+        </div>
+        <div class="col-actions">
+          <button class="btn-small btn-success" onclick="approveRequest({{ request.id }})">
+            <i class="fas fa-check"></i>
+          </button>
+          <button class="btn-small btn-warning" onclick="editRequest({{ request.id }})">
+            <i class="fas fa-edit"></i>
+          </button>
+          <button class="btn-small btn-danger" onclick="rejectRequest({{ request.id }})">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+      </div>
+      {% else %}
+      <div class="no-requests">Нет запросов</div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- Создание нового запроса -->
+  <div class="create-request-section">
+    <h3><i class="fas fa-plus-circle"></i> Создать запрос на поставку</h3>
+    <form class="request-form" onsubmit="createRequest(event)">
+      <div class="form-row">
+        <div class="form-group">
+          <label for="resource_id">Ресурс</label>
+          <select id="resource_id" name="resource_id" required>
+            <option value="">-- Выберите ресурс --</option>
+            {% for resource in resources if resources %}
+            <option value="{{ resource.id }}">{{ resource.name }} - {{ resource.company.name if resource.company else 'N/A' }}</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="quantity">Количество</label>
+          <input type="number" id="quantity" name="quantity" min="1" required>
+        </div>
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label for="priority">Приоритет</label>
+          <select id="priority" name="priority">
+            <option value="low">Низкий</option>
+            <option value="medium" selected>Средний</option>
+            <option value="high">Высокий</option>
+            <option value="urgent">Срочный</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="deadline">Срок поставки</label>
+          <input type="date" id="deadline" name="deadline">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="notes">Примечания</label>
+        <textarea id="notes" name="notes" placeholder="Дополнительная информация о запросе"></textarea>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">
+          <i class="fas fa-plus"></i> Создать запрос
+        </button>
+        <button type="button" class="btn-secondary" onclick="clearRequestForm()">
+          <i class="fas fa-times"></i> Очистить
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Загрузка Excel файлов -->
+  <div class="excel-upload-section">
+    <h3><i class="fas fa-file-excel"></i> Загрузка данных из Excel</h3>
+    <div class="upload-form">
+      <form id="excelUploadForm" enctype="multipart/form-data">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="file_type">Тип данных</label>
+            <select id="file_type" name="file_type" required>
+              <option value="">-- Выберите тип --</option>
+              <option value="companies">Компании-поставщики</option>
+              <option value="resources">Ресурсы</option>
+              <option value="products">Продукты</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="excel_file">Excel файл</label>
+            <input type="file" id="excel_file" name="file" accept=".xlsx,.xls" required>
+          </div>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn-primary">
+            <i class="fas fa-upload"></i> Загрузить данные
+          </button>
+          <button type="button" class="btn-secondary" onclick="downloadTemplate()">
+            <i class="fas fa-download"></i> Скачать шаблон
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Быстрые действия -->
+  <div class="quick-actions">
+    <h3><i class="fas fa-bolt"></i> Быстрые действия</h3>
+    <div class="action-buttons">
+      <a href="#" class="action-btn" onclick="showSuppliersModal()">
+        <i class="fas fa-truck"></i>
+        <span>Управление поставщиками</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showInventoryModal()">
+        <i class="fas fa-warehouse"></i>
+        <span>Инвентарь</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showReportsModal()">
+        <i class="fas fa-chart-bar"></i>
+        <span>Отчеты по поставкам</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showQualityModal()">
+        <i class="fas fa-award"></i>
+        <span>Контроль качества</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showAddResourceModal()">
+        <i class="fas fa-plus"></i>
+        <span>Добавить ресурс</span>
+      </a>
+      <a href="#" class="action-btn" onclick="showAddCompanyModal()">
+        <i class="fas fa-building"></i>
+        <span>Добавить компанию</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<!-- Модальные окна -->
+<div id="suppliersModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeSuppliersModal()">&times;</span>
+    <h3>Управление поставщиками</h3>
+    <div class="suppliers-list">
+      <div class="supplier-item">
+        <span class="supplier-name">ООО "Теплоресурс"</span>
+        <span class="supplier-rating">★★★★☆</span>
+        <button class="btn-small btn-info">Редактировать</button>
+      </div>
+      <div class="supplier-item">
+        <span class="supplier-name">ИП "МеталлСервис"</span>
+        <span class="supplier-rating">★★★★★</span>
+        <button class="btn-small btn-info">Редактировать</button>
+      </div>
+    </div>
+    <button class="btn-primary" onclick="addSupplier()">Добавить поставщика</button>
+  </div>
+</div>
+
+<div id="inventoryModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeInventoryModal()">&times;</span>
+    <h3>Инвентарь</h3>
+    <div class="inventory-stats">
+      <div class="inventory-item">
+        <span class="item-name">Труба стальная 50мм</span>
+        <span class="item-stock">Остаток: 150 м</span>
+        <span class="item-status good">В наличии</span>
+      </div>
+      <div class="inventory-item">
+        <span class="item-name">Котел газовый 30кВт</span>
+        <span class="item-stock">Остаток: 5 шт</span>
+        <span class="item-status warning">Мало</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="reportsModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeReportsModal()">&times;</span>
+    <h3>Отчеты по поставкам</h3>
+    <div class="report-options">
+      <button class="btn-primary" onclick="generateReport('suppliers')">Отчет по поставщикам</button>
+      <button class="btn-primary" onclick="generateReport('costs')">Отчет по затратам</button>
+      <button class="btn-primary" onclick="generateReport('quality')">Отчет по качеству</button>
+    </div>
+  </div>
+</div>
+
+<div id="qualityModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeQualityModal()">&times;</span>
+    <h3>Контроль качества</h3>
+    <div class="quality-control">
+      <div class="quality-item">
+        <span class="quality-name">Проверка качества труб</span>
+        <span class="quality-status completed">Пройдено</span>
+        <span class="quality-date">15.10.2025</span>
+      </div>
+      <div class="quality-item">
+        <span class="quality-name">Тестирование котлов</span>
+        <span class="quality-status pending">Ожидает</span>
+        <span class="quality-date">20.10.2025</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="addResourceModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAddResourceModal()">&times;</span>
+    <h3>Добавить ресурс</h3>
+    <form id="addResourceForm">
+      <div class="form-group">
+        <label for="resource_name">Название ресурса</label>
+        <input type="text" id="resource_name" name="name" required>
+      </div>
+      <div class="form-group">
+        <label for="resource_type">Тип ресурса</label>
+        <select id="resource_type" name="resource_type" required>
+          <option value="material">Материал</option>
+          <option value="equipment">Оборудование</option>
+          <option value="component">Комплектующее</option>
+        </select>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="resource_quantity">Количество</label>
+          <input type="number" id="resource_quantity" name="quantity" min="0" required>
+        </div>
+        <div class="form-group">
+          <label for="resource_unit">Единица измерения</label>
+          <input type="text" id="resource_unit" name="unit" value="шт" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="resource_cost">Цена за единицу (сум)</label>
+        <input type="number" id="resource_cost" name="cost_per_unit" min="0" step="0.01" required>
+      </div>
+      <div class="form-group">
+        <label for="resource_company">Компания-поставщик</label>
+        <select id="resource_company" name="company_id" required>
+          <option value="">-- Выберите компанию --</option>
+        </select>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Добавить ресурс</button>
+        <button type="button" class="btn-secondary" onclick="closeAddResourceModal()">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div id="addCompanyModal" class="modal">
+  <div class="modal-content">
+    <span class="close" onclick="closeAddCompanyModal()">&times;</span>
+    <h3>Добавить компанию</h3>
+    <form id="addCompanyForm">
+      <div class="form-group">
+        <label for="company_name">Название компании</label>
+        <input type="text" id="company_name" name="name" required>
+      </div>
+      <div class="form-group">
+        <label for="company_address">Адрес</label>
+        <textarea id="company_address" name="address"></textarea>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="company_phone">Телефон</label>
+          <input type="tel" id="company_phone" name="phone">
+        </div>
+        <div class="form-group">
+          <label for="company_email">Email</label>
+          <input type="email" id="company_email" name="email">
+        </div>
+      </div>
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Добавить компанию</button>
+        <button type="button" class="btn-secondary" onclick="closeAddCompanyModal()">Отмена</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<style>
+.dashboard {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.dashboard h2 {
+  color: #333;
+  margin-bottom: 30px;
+  font-size: 2em;
+  text-align: center;
+}
+
+.supply-overview, .resources-section, .requests-section, .create-request-section, .quick-actions {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  margin-bottom: 30px;
+}
+
+.supply-overview h3, .resources-section h3, .requests-section h3, .create-request-section h3, .quick-actions h3 {
+  color: #333;
+  margin-bottom: 20px;
+  font-size: 1.5em;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.stat-number {
+  font-size: 2em;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.stat-label {
+  font-size: 0.9em;
+  opacity: 0.9;
+}
+
+.resources-table, .requests-table {
+  border: 1px solid #ddd;
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.table-header {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 120px 100px 120px;
+  background: #f8f9fa;
+  font-weight: bold;
+  padding: 15px;
+  border-bottom: 2px solid #ddd;
+}
+
+.table-row {
+  display: grid;
+  grid-template-columns: 60px 1fr 1fr 120px 100px 120px;
+  padding: 15px;
+  border-bottom: 1px solid #eee;
+  align-items: center;
+}
+
+.table-row:hover {
+  background: #f8f9fa;
+}
+
+.quality-badge, .status-badge {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.quality-excellent {
+  background: #28a745;
+  color: white;
+}
+
+.quality-good {
+  background: #17a2b8;
+  color: white;
+}
+
+.quality-average {
+  background: #ffc107;
+  color: #000;
+}
+
+.quality-poor {
+  background: #dc3545;
+  color: white;
+}
+
+.status-pending {
+  background: #ffc107;
+  color: #000;
+}
+
+.status-approved {
+  background: #17a2b8;
+  color: white;
+}
+
+.status-purchased {
+  background: #6f42c1;
+  color: white;
+}
+
+.status-delivered {
+  background: #28a745;
+  color: white;
+}
+
+.btn-small {
+  padding: 4px 8px;
+  border: none;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.8em;
+  margin: 0 2px;
+}
+
+.btn-info {
+  background: #17a2b8;
+  color: white;
+}
+
+.btn-warning {
+  background: #ffc107;
+  color: #000;
+}
+
+.btn-success {
+  background: #28a745;
+  color: white;
+}
+
+.btn-danger {
+  background: #dc3545;
+  color: white;
+}
+
+.no-resources, .no-requests {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 40px;
+}
+
+.request-form {
+  display: grid;
+  gap: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group label {
+  margin-bottom: 5px;
+  font-weight: bold;
+  color: #333;
+}
+
+.form-group input, .form-group select, .form-group textarea {
+  padding: 10px;
+  border: 2px solid #ddd;
+  border-radius: 5px;
+  font-size: 14px;
+  transition: border-color 0.3s ease;
+}
+
+.form-group input:focus, .form-group select:focus, .form-group textarea:focus {
+  outline: none;
+  border-color: #667eea;
+}
+
+.form-actions {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 12px 24px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #007bff;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #0056b3;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background: #6c757d;
+  color: white;
+}
+
+.btn-secondary:hover {
+  background: #545b62;
+}
+
+.action-buttons {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+}
+
+.action-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.action-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+  color: white;
+  text-decoration: none;
+}
+
+.action-btn i {
+  font-size: 2em;
+  margin-bottom: 10px;
+}
+
+.action-btn span {
+  font-weight: bold;
+  text-align: center;
+}
+
+/* Модальные окна */
+.modal {
+  display: none;
+  position: fixed;
+  z-index: 1000;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0,0,0,0.5);
+}
+
+.modal-content {
+  background-color: white;
+  margin: 5% auto;
+  padding: 20px;
+  border-radius: 10px;
+  width: 80%;
+  max-width: 600px;
+  position: relative;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+.close {
+  color: #aaa;
+  float: right;
+  font-size: 28px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.close:hover {
+  color: #000;
+}
+
+.suppliers-list, .inventory-stats, .quality-control {
+  margin: 20px 0;
+}
+
+.supplier-item, .inventory-item, .quality-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+  border-bottom: 1px solid #eee;
+}
+
+.supplier-rating {
+  color: #ffc107;
+}
+
+.item-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.item-status.good {
+  background: #d4edda;
+  color: #155724;
+}
+
+.item-status.warning {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.quality-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: bold;
+}
+
+.quality-status.completed {
+  background: #d4edda;
+  color: #155724;
+}
+
+.quality-status.pending {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.report-options {
+  display: grid;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+@media (max-width: 768px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .table-header, .table-row {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+  
+  .action-buttons {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+}
+</style>
+
+<script>
+// Глобальные переменные
+let resources = [];
+let companies = [];
+
+// Загрузка данных при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  loadResources();
+  loadCompanies();
+  setupEventListeners();
+});
+
+function setupEventListeners() {
+  // Обработчик загрузки Excel файлов
+  document.getElementById('excelUploadForm').addEventListener('submit', handleExcelUpload);
+  
+  // Обработчики форм
+  document.getElementById('addResourceForm').addEventListener('submit', handleAddResource);
+  document.getElementById('addCompanyForm').addEventListener('submit', handleAddCompany);
+}
+
+function loadResources() {
+  fetch('/api/resources')
+    .then(response => response.json())
+    .then(data => {
+      resources = data;
+      updateResourcesTable();
+    })
+    .catch(error => console.error('Ошибка загрузки ресурсов:', error));
+}
+
+function loadCompanies() {
+  fetch('/api/companies')
+    .then(response => response.json())
+    .then(data => {
+      companies = data;
+      updateCompanySelects();
+    })
+    .catch(error => console.error('Ошибка загрузки компаний:', error));
+}
+
+function updateResourcesTable() {
+  const tableBody = document.querySelector('.resources-table');
+  if (!tableBody) return;
+  
+  // Обновляем таблицу ресурсов
+  const rows = tableBody.querySelectorAll('.table-row');
+  rows.forEach(row => row.remove());
+  
+  resources.slice(0, 10).forEach(resource => {
+    const row = document.createElement('div');
+    row.className = 'table-row';
+    row.innerHTML = `
+      <div class="col-id">${resource.id}</div>
+      <div class="col-name">${resource.name}</div>
+      <div class="col-company">${resource.company_name}</div>
+      <div class="col-price">${resource.cost_per_unit.toLocaleString()} сум</div>
+      <div class="col-quality">
+        <span class="quality-badge quality-good">Хорошее</span>
+      </div>
+      <div class="col-actions">
+        <button class="btn-small btn-info" onclick="viewResource(${resource.id})">
+          <i class="fas fa-eye"></i>
+        </button>
+        <button class="btn-small btn-warning" onclick="editResource(${resource.id})">
+          <i class="fas fa-edit"></i>
+        </button>
+        <button class="btn-small btn-success" onclick="addToCart(${resource.id})">
+          <i class="fas fa-cart-plus"></i>
+        </button>
+      </div>
+    `;
+    tableBody.appendChild(row);
+  });
+}
+
+function updateCompanySelects() {
+  const selects = document.querySelectorAll('#resource_company');
+  selects.forEach(select => {
+    select.innerHTML = '<option value="">-- Выберите компанию --</option>';
+    companies.forEach(company => {
+      const option = document.createElement('option');
+      option.value = company.id;
+      option.textContent = company.name;
+      select.appendChild(option);
+    });
+  });
+}
+
+function handleExcelUpload(event) {
+  event.preventDefault();
+  
+  const formData = new FormData();
+  const fileInput = document.getElementById('excel_file');
+  const fileType = document.getElementById('file_type').value;
+  
+  if (!fileInput.files[0]) {
+    alert('Выберите файл для загрузки');
+    return;
+  }
+  
+  if (!fileType) {
+    alert('Выберите тип данных');
+    return;
+  }
+  
+  formData.append('file', fileInput.files[0]);
+  formData.append('file_type', fileType);
+  
+  fetch('/upload-excel', {
+    method: 'POST',
+    body: formData
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert('Ошибка: ' + data.error);
+    } else {
+      alert('Данные успешно загружены!');
+      loadResources();
+      loadCompanies();
+      document.getElementById('excelUploadForm').reset();
+    }
+  })
+  .catch(error => {
+    console.error('Ошибка:', error);
+    alert('Ошибка при загрузке файла');
+  });
+}
+
+function handleAddResource(event) {
+  event.preventDefault();
+  
+  const formData = new FormData(event.target);
+  const data = Object.fromEntries(formData.entries());
+  
+  fetch('/api/resources', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert('Ошибка: ' + data.error);
+    } else {
+      alert('Ресурс успешно добавлен!');
+      closeAddResourceModal();
+      loadResources();
+      event.target.reset();
+    }
+  })
+  .catch(error => {
+    console.error('Ошибка:', error);
+    alert('Ошибка при добавлении ресурса');
+  });
+}
+
+function handleAddCompany(event) {
+  event.preventDefault();
+  
+  const formData = new FormData(event.target);
+  const data = Object.fromEntries(formData.entries());
+  
+  fetch('/api/companies', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(data)
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.error) {
+      alert('Ошибка: ' + data.error);
+    } else {
+      alert('Компания успешно добавлена!');
+      closeAddCompanyModal();
+      loadCompanies();
+      event.target.reset();
+    }
+  })
+  .catch(error => {
+    console.error('Ошибка:', error);
+    alert('Ошибка при добавлении компании');
+  });
+}
+
+function createRequest(event) {
+  event.preventDefault();
+  alert('Запрос на поставку создан успешно!');
+  // Здесь будет AJAX запрос для создания запроса
+}
+
+function clearRequestForm() {
+  document.querySelector('.request-form').reset();
+}
+
+function viewResource(resourceId) {
+  const resource = resources.find(r => r.id === resourceId);
+  if (resource) {
+    alert(`Ресурс: ${resource.name}\nТип: ${resource.resource_type}\nКоличество: ${resource.quantity} ${resource.unit}\nЦена: ${resource.cost_per_unit.toLocaleString()} сум\nПоставщик: ${resource.company_name}`);
+  }
+}
+
+function editResource(resourceId) {
+  alert(`Редактирование ресурса #${resourceId} - функция в разработке`);
+}
+
+function addToCart(resourceId) {
+  alert(`Ресурс #${resourceId} добавлен в корзину`);
+}
+
+function approveRequest(requestId) {
+  if (confirm('Одобрить запрос на поставку?')) {
+    fetch(`/api/resource-requests/${requestId}/approve`, {
+      method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert('Запрос одобрен!');
+      location.reload();
+    })
+    .catch(error => {
+      console.error('Ошибка:', error);
+      alert('Ошибка при одобрении запроса');
+    });
+  }
+}
+
+function editRequest(requestId) {
+  alert(`Редактирование запроса #${requestId} - функция в разработке`);
+}
+
+function rejectRequest(requestId) {
+  if (confirm('Отклонить запрос на поставку?')) {
+    fetch(`/api/resource-requests/${requestId}/reject`, {
+      method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+      alert('Запрос отклонен!');
+      location.reload();
+    })
+    .catch(error => {
+      console.error('Ошибка:', error);
+      alert('Ошибка при отклонении запроса');
+    });
+  }
+}
+
+function downloadTemplate() {
+  alert('Скачивание шаблона Excel файла - функция в разработке');
+}
+
+function showSuppliersModal() {
+  document.getElementById('suppliersModal').style.display = 'block';
+}
+
+function closeSuppliersModal() {
+  document.getElementById('suppliersModal').style.display = 'none';
+}
+
+function showInventoryModal() {
+  document.getElementById('inventoryModal').style.display = 'block';
+}
+
+function closeInventoryModal() {
+  document.getElementById('inventoryModal').style.display = 'none';
+}
+
+function showReportsModal() {
+  document.getElementById('reportsModal').style.display = 'block';
+}
+
+function closeReportsModal() {
+  document.getElementById('reportsModal').style.display = 'none';
+}
+
+function showQualityModal() {
+  document.getElementById('qualityModal').style.display = 'block';
+}
+
+function closeQualityModal() {
+  document.getElementById('qualityModal').style.display = 'none';
+}
+
+function showAddResourceModal() {
+  document.getElementById('addResourceModal').style.display = 'block';
+}
+
+function closeAddResourceModal() {
+  document.getElementById('addResourceModal').style.display = 'none';
+}
+
+function showAddCompanyModal() {
+  document.getElementById('addCompanyModal').style.display = 'block';
+}
+
+function closeAddCompanyModal() {
+  document.getElementById('addCompanyModal').style.display = 'none';
+}
+
+function addSupplier() {
+  alert('Добавление нового поставщика');
+}
+
+function generateReport(type) {
+  alert(`Генерация отчета: ${type}`);
+  closeReportsModal();
+}
+
+// Закрытие модальных окон при клике вне их
+window.onclick = function(event) {
+  const modals = ['suppliersModal', 'inventoryModal', 'reportsModal', 'qualityModal', 'addResourceModal', 'addCompanyModal'];
+  modals.forEach(modalId => {
+    const modal = document.getElementById(modalId);
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  });
+}
+</script>
+{% endblock %}
