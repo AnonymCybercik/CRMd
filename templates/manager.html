@@ -596,7 +596,7 @@
     event.preventDefault();
 
     let orderform = document.getElementById("ordercreate")
-    fetch("http://127.0.0.1:5000/manager", {
+    fetch("https://teploresurscrm.uz/manager", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -634,7 +634,7 @@
   }
 
   function deleteOrder(orderId) {
-    fetch("http://127.0.0.1:5000/manager", {
+    fetch("https://teploresurscrm.uz/manager", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
