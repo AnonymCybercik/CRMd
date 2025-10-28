@@ -614,7 +614,7 @@
       })
       .then(res => res.json())
       .then(data => window.location.reload(true))
-      .catch(err => console.error("Error:", err));
+      .catch(err => location.reload());
 
       
   }
@@ -644,8 +644,8 @@
         }),
       })
       .then(res => res.json())
-      .then(() => {window.location.reload()}) 
-      .catch(err => console.error("Error:", err));
+      .then(() => location.reload()) 
+      .catch(err => location.reload());
   }
 
   function showClientsModal() {
